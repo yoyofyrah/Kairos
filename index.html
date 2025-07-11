@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kairos: Pixel Art Converter</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 24px; /* Reduced padding */
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 1000px; /* Adjusted max-width */
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px; /* Reduced gap */
+        }
+        .input-group label {
+            font-weight: 600;
+            color: #374151; /* Darker gray for labels */
+            margin-bottom: 6px; /* Reduced margin */
+            display: block;
+        }
+        .input-group input[type="file"],
+        .input-group input[type="number"],
+        .input-group input[type="range"],
+        .input-group select { /* Added select for styling */
+            border: 1px solid #d1d5db;
+            padding: 8px 10px; /* Reduced padding */
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease-in-out;
+            background-color: #ffffff; /* Ensure select has white background */
+            appearance: none; /* Remove default arrow */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%20viewBox%3D%220%200%20292.4%20292.4%22%3E%3Cpath%20fill%3D%22%236B7280%22%20d%3D%22M287%2C197.3L159.2%2C69.5c-3.6-3.6-8.2-5.4-12.8-5.4s-9.2%2C1.8-12.8%2C5.4L5.4%2C197.3c-7.2%2C7.2-7.2%2C18.8%2C0%2C26.1c7.2%2C7.2%2C18.8%2C7.2%2C26.1%2C0l120.3-120.3l120.3%2C120.3c7.2%2C7.2%2C18.8%2C7.2%2C26.1%2C0C294.2%2C216.1%2C294.2%2C204.5%2C287%2C197.3z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 0.7em top 50%, 0 0;
+            background-size: 0.65em auto, 100%;
+        }
+        .input-group input[type="file"] {
+            border: 2px dashed #d1d5db; /* Light gray dashed border */
+            background-color: #f9fafb; /* Lighter background for file input */
+            cursor: pointer;
+        }
+        .input-group input[type="file"]:hover {
+            border-color: #9ca3af; /* Darker gray on hover */
+        }
+        .input-group input[type="number"]:focus,
+        .input-group input[type="range"]:focus,
+        .input-group select:focus { /* Added select for focus style */
+            outline: none;
+            border-color: #3b82f6; /* Blue focus ring */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+        .btn-primary {
+            background-color: #3b82f6; /* Blue button */
+            color: white;
+            padding: 10px 20px; /* Reduced padding */
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            border: none;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb; /* Darker blue on hover */
+            transform: translateY(-1px);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        .btn-disabled {
+            background-color: #9ca3af; /* Gray for disabled */
+            cursor: not-allowed;
+        }
+        canvas {
+            border: 1px solid #e5e7eb; /* Light border for canvas */
+            border-radius: 8px;
+            background-color: #f9fafb;
+            max-width: 100%;
+            height: auto; /* Ensure canvas scales responsively */
+            display: block; /* Remove extra space below canvas */
+        }
+        .message-box {
+            background-color: #fef2f2; /* Light red for errors */
+            color: #ef4444; /* Red text */
+            padding: 10px; /* Reduced padding */
+            border-radius: 8px;
+            border: 1px solid #fca5a5;
+            margin-top: 12px; /* Reduced margin */
+            display: none; /* Hidden by default */
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .download-link {
+            display: none; /* Hidden by default */
+            text-align: center;
+            margin-top: 12px; /* Reduced margin */
+        }
+        .download-link a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s ease-in-out;
+        }
+        .download-link a:hover {
+            color: #2563eb;
+        }
+        /* Flex layout for width/height inputs */
+        .dimensions-group {
+            display: flex;
+            gap: 12px; /* Reduced gap */
+        }
+        .dimensions-group .input-group {
+            flex: 1;
+        }
+
+        /* Grouping for adjustments */
+        .adjustments-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 12px; /* Reduced gap */
+        }
+        @media (min-width: 480px) { /* Adjust for smaller screens */
+            .adjustments-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (min-width: 768px) { /* Adjust for larger screens */
+            .adjustments-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 640px) {
+            .container {
+                flex-direction: row;
+                gap: 24px; /* Maintain some gap between panels */
+            }
+            .left-panel, .right-panel {
+                flex: 1;
+            }
+            .left-panel {
+                padding-right: 24px;
+                border-right: 1px solid #e5e7eb;
+            }
+            .right-panel {
+                padding-left: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel flex flex-col gap-4"> <!-- Reduced gap -->
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Kairos: Pixel Art Converter</h1> <!-- Reduced margin -->
+
+            <div class="input-group">
+                <label for="imageUpload">Upload Image (.jpeg, .png)</label>
+                <input type="file" id="imageUpload" accept=".jpeg, .jpg, .png">
+            </div>
+
+            <div class="dimensions-group">
+                <div class="input-group">
+                    <label for="outputWidth">Output Width (max 1920)</label>
+                    <input type="number" id="outputWidth" value="640" min="1" max="1920">
+                </div>
+                <div class="input-group">
+                    <label for="outputHeight">Output Height (max 1080)</label>
+                    <input type="number" id="outputHeight" value="480" min="1" max="1080">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="pixelSize">Pixelation Level (<span id="pixelSizeValue">8</span>)</label>
+                <input type="range" id="pixelSize" min="2" max="30" value="8" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+            </div>
+
+            <div class="input-group">
+                <label for="paletteSize">Palette Size (<span id="paletteSizeValue">16</span> colors)</label>
+                <input type="range" id="paletteSize" min="1" max="32" value="16" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+            </div>
+
+            <div class="input-group">
+                <label for="palettePreset">Color Palette Preset</label>
+                <select id="palettePreset" class="block w-full">
+                    <option value="custom">Custom</option>
+                    <option value="gameboy">Game Boy (4 colors)</option>
+                    <option value="nes">NES (64 colors)</option>
+                    <option value="snes">SNES (256 colors)</option>
+                    <option value="pico8">PICO-8 (16 colors)</option>
+                    <option value="c64">Commodore 64 (16 colors)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="ditheringAlgorithm">Dithering Algorithm</label>
+                <select id="ditheringAlgorithm" class="block w-full">
+                    <option value="floyd-steinberg">Floyd-Steinberg</option>
+                    <option value="atkinson">Atkinson</option>
+                    <option value="ordered">Ordered (Bayer)</option>
+                    <option value="none">None</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="ditheringIntensity">Dithering Intensity (<span id="ditheringIntensityValue">100</span>%)</label>
+                <input type="range" id="ditheringIntensity" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+            </div>
+
+            <hr class="border-gray-200 my-2">
+
+            <h2 class="text-xl font-semibold text-gray-700">Image Adjustments</h2>
+
+            <div class="adjustments-grid"> <!-- New grid container for sliders -->
+                <div class="input-group">
+                    <label for="hue">Hue Rotation (<span id="hueValue">0</span>°)</label>
+                    <input type="range" id="hue" min="0" max="360" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div class="input-group">
+                    <label for="brightness">Brightness (<span id="brightnessValue">100</span>%)</label>
+                    <input type="range" id="brightness" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div class="input-group">
+                    <label for="contrast">Contrast (<span id="contrastValue">100</span>%)</label>
+                    <input type="range" id="contrast" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div class="input-group">
+                    <label for="saturation">Saturation (<span id="saturationValue">100</span>%)</label>
+                    <input type="range" id="saturation" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div class="input-group">
+                    <label for="gamma">Gamma (<span id="gammaValue">1.0</span>)</label>
+                    <input type="range" id="gamma" min="10" max="300" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+            </div>
+
+            <button id="resetAdjustmentsBtn" class="btn-primary">Reset All Adjustments</button>
+            <button id="downloadSettingsBtn" class="btn-primary">Download Current Settings</button>
+            <div class="input-group">
+                <label for="uploadSettingsInput" class="sr-only">Upload Settings File</label>
+                <input type="file" id="uploadSettingsInput" accept=".json" class="btn-primary !bg-gray-200 !text-gray-800 hover:!bg-gray-300">
+            </div>
+            <button id="convertBtn" class="btn-primary" disabled>Convert to Pixel Art</button>
+
+            <div id="loadingSpinner" class="loading-spinner"></div>
+            <div id="messageBox" class="message-box"></div>
+        </div>
+
+        <div class="right-panel flex flex-col gap-6 items-center">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-2">Result</h2>
+            <canvas id="outputCanvas" class="w-full h-auto"></canvas>
+            <div id="downloadLink" class="download-link">
+                <a href="#" id="downloadBtn" download="pixel-art.png">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Download Pixel Art
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const imageUpload = document.getElementById('imageUpload');
+        const outputWidthInput = document.getElementById('outputWidth');
+        const outputHeightInput = document.getElementById('outputHeight');
+        const pixelSizeInput = document.getElementById('pixelSize');
+        const pixelSizeValueSpan = document.getElementById('pixelSizeValue');
+        const paletteSizeInput = document.getElementById('paletteSize');
+        const paletteSizeValueSpan = document.getElementById('paletteSizeValue');
+        const palettePresetSelect = document.getElementById('palettePreset');
+        const ditheringAlgorithmSelect = document.getElementById('ditheringAlgorithm');
+        const ditheringIntensityInput = document.getElementById('ditheringIntensity'); // New
+        const ditheringIntensityValueSpan = document.getElementById('ditheringIntensityValue'); // New
+        const resetAdjustmentsBtn = document.getElementById('resetAdjustmentsBtn');
+        const downloadSettingsBtn = document.getElementById('downloadSettingsBtn'); // New
+        const uploadSettingsInput = document.getElementById('uploadSettingsInput'); // New
+        const convertBtn = document.getElementById('convertBtn');
+        const outputCanvas = document.getElementById('outputCanvas');
+        const downloadLink = document.getElementById('downloadLink');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const messageBox = document.getElementById('messageBox');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        // Adjustment sliders and their value displays
+        const hueInput = document.getElementById('hue');
+        const hueValueSpan = document.getElementById('hueValue');
+        const brightnessInput = document.getElementById('brightness');
+        const brightnessValueSpan = document.getElementById('brightnessValue');
+        const contrastInput = document.getElementById('contrast');
+        const contrastValueSpan = document.getElementById('contrastValue');
+        const saturationInput = document.getElementById('saturation');
+        const saturationValueSpan = document.getElementById('saturationValue');
+        const gammaInput = document.getElementById('gamma');
+        const gammaValueSpan = document.getElementById('gammaValue');
+
+        // Get 2D rendering context for the output canvas
+        const ctx = outputCanvas.getContext('2d', { willReadFrequently: true });
+
+        // Hidden canvas for original image and intermediate processing
+        const originalCanvas = document.createElement('canvas');
+        const originalCtx = originalCanvas.getContext('2d', { willReadFrequently: true });
+
+        let originalImage = null; // Stores the loaded image object
+
+        // Constants for max dimensions
+        const MAX_WIDTH = 1920;
+        const MAX_HEIGHT = 1080;
+
+        // Predefined Palettes (RGB hex strings)
+        const predefinedPalettes = {
+            'gameboy': [
+                "#0F380F", "#306230", "#8BAC0F", "#9BBC0F" // Game Boy (4 shades of green)
+            ],
+            'nes': [
+                "#7C7C7C", "#0000FC", "#0000BC", "#4428BC", "#940084", "#A80020", "#A81000", "#881400",
+                "#503000", "#007800", "#006800", "#005800", "#004058", "#000000", "#000000", "#000000",
+                "#BCBCBC", "#0078F8", "#0058F8", "#6844FC", "#D800CC", "#E40058", "#F83800", "#E45C10",
+                "#AC7C00", "#00B800", "#00A800", "#00A000", "#008888", "#000000", "#000000", "#000000",
+                "#F8F8F8", "#3CBCFC", "#6888FC", "#9878F8", "#F878F8", "#F85898", "#F87858", "#FCA044",
+                "#F8B800", "#B8F818", "#58D854", "#58F898", "#00E8D8", "#787878", "#000000", "#000000",
+                "#ACE4F8", "#D8D8F8", "#F8D8F8", "#F8B8B8", "#F8A888", "#FCA878", "#FCA858", "#FCA844",
+                "#F8D800", "#D8F878", "#B8F8B8", "#B8F8D8", "#00FCFC", "#F8D8F8", "#000000", "#000000"
+            ],
+            'snes': [ // A common subset of SNES colors, SNES had a very large palette (32,768 colors)
+                "#000000", "#101010", "#212121", "#313131", "#424242", "#525252", "#636363", "#737373",
+                "#848484", "#949494", "#A5A5A5", "#B5B5B5", "#C6C6C6", "#D6D6D6", "#E7E7E7", "#F8F8F8",
+                "#FF0000", "#D00000", "#A00000", "#700000", "#00FF00", "#00D000", "#00A000", "#007000",
+                "#0000FF", "#0000D0", "#0000A0", "#000070", "#FFFF00", "#D0D000", "#A0A000", "#707000",
+                "#FF00FF", "#D000D0", "#A000A0", "#700070", "#00FFFF", "#00D0D0", "#00A0A0", "#007070",
+                "#F80084", "#D00070", "#A00058", "#700040", "#84F800", "#70D000", "#58A000", "#407000",
+                "#00F884", "#00D070", "#00A058", "#007040", "#8400F8", "#7000D0", "#5800A0", "#400070",
+                "#0084F8", "#0070D0", "#0058A0", "#004070", "#F88400", "#D07000", "#A05800", "#704000",
+                "#F8F800", "#D0D000", "#A0A000", "#707000", "#F800F8", "#D000D0", "#A000A0", "#700070",
+                "#00F8F8", "#00D0D0", "#00A0A0", "#007070", "#F88484", "#D07070", "#A05858", "#704040",
+                "#84F884", "#70D070", "#58A058", "#407040", "#8484F8", "#7070D0", "#5858A0", "#404070",
+                "#F8F884", "#D0D070", "#A0A058", "#707040", "#F884F8", "#D070D0", "#A058A0", "#704070",
+                "#84F8F8", "#70D0D0", "#58A0A0", "#407070", "#F8F8F8", "#D0D0D0", "#A0A0A0", "#707070"
+            ],
+            'pico8': [
+                "#000000", "#1D2B53", "#7E2553", "#008751", "#AB5236", "#5F574F", "#C2C3C7", "#FFF1E8",
+                "#FF004D", "#FFA300", "#FFEC27", "#00E436", "#29ADFF", "#83769C", "#FF77A8", "#FFCCAA"
+            ],
+            'c64': [
+                "#000000", "#FFFFFF", "#813338", "#75BD62", "#333CB6", "#883979", "#554100", "#B7CE8E",
+                "#814A00", "#FF7148", "#555555", "#8E8E8E", "#B7F09C", "#7084B7", "#B972CE", "#B7B7B7"
+            ]
+        };
+
+        // Bayer 8x8 matrix for ordered dithering
+        const bayerMatrix8x8 = [
+            [  0, 32,  8, 40,  2, 34, 10, 42 ],
+            [ 48, 16, 56, 24, 50, 18, 58, 26 ],
+            [ 12, 44,  4, 36, 14, 46,  6, 38 ],
+            [ 60, 28, 52, 20, 62, 30, 54, 22 ],
+            [  3, 35, 11, 43,  1, 33,  9, 41 ],
+            [ 51, 19, 59, 27, 49, 17, 57, 25 ],
+            [ 15, 47,  7, 39, 13, 45,  5, 37 ],
+            [ 63, 31, 55, 23, 61, 29, 53, 21 ]
+        ];
+        const bayerMatrixSize = 8;
+        const bayerMatrixFactor = 1 / (bayerMatrixSize * bayerMatrixSize);
+
+
+        // Function to display messages to the user
+        function showMessage(message, type = 'error') {
+            messageBox.textContent = message;
+            messageBox.style.display = 'block';
+            if (type === 'error') {
+                messageBox.className = 'message-box bg-red-100 text-red-700 border-red-300';
+            } else {
+                messageBox.className = 'message-box bg-green-100 text-green-700 border-green-300';
+            }
+        }
+
+        // Function to hide messages
+        function hideMessage() {
+            messageBox.style.display = 'none';
+        }
+
+        // Function to show loading spinner for image processing
+        function showLoading() {
+            loadingSpinner.style.display = 'block';
+            convertBtn.disabled = true;
+            convertBtn.classList.add('btn-disabled');
+            hideMessage();
+            downloadLink.style.display = 'none';
+        }
+
+        // Function to hide loading spinner for image processing
+        function hideLoading() {
+            loadingSpinner.style.display = 'none';
+            convertBtn.disabled = false;
+            convertBtn.classList.remove('btn-disabled');
+        }
+
+        // Function to reset all adjustment sliders to their default values
+        function resetAdjustments() {
+            hueInput.value = 0;
+            hueValueSpan.textContent = 0;
+            brightnessInput.value = 100;
+            brightnessValueSpan.textContent = 100;
+            contrastInput.value = 100;
+            contrastValueSpan.textContent = 100;
+            saturationInput.value = 100;
+            saturationValueSpan.textContent = 100;
+            gammaInput.value = 100; // Represents 1.0
+            gammaValueSpan.textContent = 1.0;
+            pixelSizeInput.value = 8; // Reset pixel size
+            pixelSizeValueSpan.textContent = 8;
+            paletteSizeInput.value = 16; // Reset palette size
+            paletteSizeValueSpan.textContent = 16;
+            paletteSizeInput.disabled = false; // Enable palette size slider
+            palettePresetSelect.value = 'custom'; // Reset preset to custom
+            ditheringAlgorithmSelect.value = 'floyd-steinberg'; // Reset dithering to Floyd-Steinberg
+            ditheringIntensityInput.value = 100; // Reset dithering intensity
+            ditheringIntensityValueSpan.textContent = 100;
+
+            // If an image is loaded, re-process to apply reset
+            if (originalImage) {
+                triggerProcessImage();
+            }
+        }
+
+        // Event listener for image file selection
+        imageUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) {
+                originalImage = null;
+                convertBtn.disabled = true;
+                convertBtn.classList.add('btn-disabled');
+                hideMessage();
+                downloadLink.style.display = 'none';
+                return;
+            }
+
+            // Validate file type
+            if (!file.type.match('image/jpeg') && !file.type.match('image/png')) {
+                showMessage('Please upload a .jpeg or .png image.');
+                originalImage = null;
+                convertBtn.disabled = true;
+                convertBtn.classList.add('btn-disabled');
+                return;
+            }
+
+            hideMessage();
+            showLoading(); // Show loading while image is being read
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    originalImage = img;
+                    // Set default output dimensions based on original image aspect ratio, capped by max
+                    let defaultWidth = Math.min(img.width, MAX_WIDTH);
+                    let defaultHeight = Math.min(img.height, MAX_HEIGHT);
+
+                    if (img.width > MAX_WIDTH || img.height > MAX_HEIGHT) {
+                        const aspectRatio = img.width / img.height;
+                        if (aspectRatio > (MAX_WIDTH / MAX_HEIGHT)) {
+                            defaultWidth = MAX_WIDTH;
+                            defaultHeight = Math.round(MAX_WIDTH / aspectRatio);
+                        } else {
+                            defaultHeight = MAX_HEIGHT;
+                            defaultWidth = Math.round(MAX_HEIGHT * aspectRatio);
+                        }
+                    }
+
+                    outputWidthInput.value = defaultWidth;
+                    outputHeightInput.value = defaultHeight;
+
+                    convertBtn.disabled = false;
+                    convertBtn.classList.remove('btn-disabled');
+                    hideLoading();
+                    // Automatically process image after loading and setting defaults
+                    triggerProcessImage();
+                };
+                img.onerror = () => {
+                    showMessage('Could not load image. Please try another file.');
+                    originalImage = null;
+                    convertBtn.disabled = true;
+                    convertBtn.classList.add('btn-disabled');
+                    hideLoading();
+                };
+                img.src = e.target.result;
+            };
+            reader.onerror = () => {
+                showMessage('Error reading file. Please try again.');
+                originalImage = null;
+                convertBtn.disabled = true;
+                convertBtn.classList.add('btn-disabled');
+                hideLoading();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Update pixel size value display and re-process on input
+        pixelSizeInput.addEventListener('input', () => {
+            pixelSizeValueSpan.textContent = pixelSizeInput.value;
+            triggerProcessImage();
+        });
+        // Double-click to reset pixel size
+        pixelSizeInput.addEventListener('dblclick', () => {
+            pixelSizeInput.value = 8;
+            pixelSizeValueSpan.textContent = 8;
+            triggerProcessImage();
+        });
+
+        // Update palette size value display and re-process on input
+        paletteSizeInput.addEventListener('input', () => {
+            paletteSizeValueSpan.textContent = paletteSizeInput.value;
+            triggerProcessImage();
+        });
+        // Double-click to reset palette size
+        paletteSizeInput.addEventListener('dblclick', () => {
+            paletteSizeInput.value = 16;
+            paletteSizeValueSpan.textContent = 16;
+            paletteSizeInput.disabled = false; // Ensure it's enabled after reset
+            palettePresetSelect.value = 'custom'; // Set to custom
+            triggerProcessImage();
+        });
+
+        // Event listener for palette preset selection
+        palettePresetSelect.addEventListener('change', () => {
+            const selectedPreset = palettePresetSelect.value;
+            if (selectedPreset === 'custom') {
+                paletteSizeInput.disabled = false;
+                paletteSizeInput.value = 16; // Default to 16 for custom
+                paletteSizeValueSpan.textContent = 16;
+            } else if (predefinedPalettes[selectedPreset]) {
+                const palette = predefinedPalettes[selectedPreset];
+                paletteSizeInput.value = palette.length;
+                paletteSizeValueSpan.textContent = palette.length;
+                paletteSizeInput.disabled = true; // Disable slider for presets
+            }
+            triggerProcessImage();
+        });
+
+        // Event listener for dithering algorithm selection
+        ditheringAlgorithmSelect.addEventListener('change', () => {
+            triggerProcessImage();
+        });
+
+        // Update dithering intensity value display and re-process on input
+        ditheringIntensityInput.addEventListener('input', () => {
+            ditheringIntensityValueSpan.textContent = ditheringIntensityInput.value;
+            triggerProcessImage();
+        });
+        // Double-click to reset dithering intensity
+        ditheringIntensityInput.addEventListener('dblclick', () => {
+            ditheringIntensityInput.value = 100;
+            ditheringIntensityValueSpan.textContent = 100;
+            triggerProcessImage();
+        });
+
+        // Update adjustment value displays and re-process on input
+        hueInput.addEventListener('input', () => {
+            hueValueSpan.textContent = hueInput.value;
+            triggerProcessImage();
+        });
+        // Double-click to reset hue
+        hueInput.addEventListener('dblclick', () => {
+            hueInput.value = 0;
+            hueValueSpan.textContent = 0;
+            triggerProcessImage();
+        });
+
+        brightnessInput.addEventListener('input', () => {
+            brightnessValueSpan.textContent = brightnessInput.value;
+            triggerProcessImage();
+        });
+        // Double-click to reset brightness
+        brightnessInput.addEventListener('dblclick', () => {
+            brightnessInput.value = 100;
+            brightnessValueSpan.textContent = 100;
+            triggerProcessImage();
+        });
+
+        contrastInput.addEventListener('input', () => {
+            contrastValueSpan.textContent = contrastInput.value;
+            triggerProcessImage();
+        });
+        // Double-click to reset contrast
+        contrastInput.addEventListener('dblclick', () => {
+            contrastInput.value = 100;
+            contrastValueSpan.textContent = 100;
+            triggerProcessImage();
+        });
+
+        saturationInput.addEventListener('input', () => {
+            saturationValueSpan.textContent = saturationInput.value;
+            triggerProcessImage();
+        });
+        // Double-click to reset saturation
+        saturationInput.addEventListener('dblclick', () => {
+            saturationInput.value = 100;
+            saturationValueSpan.textContent = 100;
+            triggerProcessImage();
+        });
+
+        gammaInput.addEventListener('input', () => {
+            gammaValueSpan.textContent = (gammaInput.value / 100).toFixed(1); // Convert 10-300 to 0.1-3.0
+            triggerProcessImage();
+        });
+        // Double-click to reset gamma
+        gammaInput.addEventListener('dblclick', () => {
+            gammaInput.value = 100;
+            gammaValueSpan.textContent = 1.0;
+            triggerProcessImage();
+        });
+
+        // Event listeners for output dimensions
+        outputWidthInput.addEventListener('input', triggerProcessImage);
+        outputHeightInput.addEventListener('input', triggerProcessImage);
+
+
+        // Event listener for Reset All Adjustments button click
+        resetAdjustmentsBtn.addEventListener('click', resetAdjustments);
+
+        // Event listener for Download Settings button click
+        downloadSettingsBtn.addEventListener('click', () => {
+            const settings = {
+                outputWidth: parseInt(outputWidthInput.value),
+                outputHeight: parseInt(outputHeightInput.value),
+                pixelSize: parseInt(pixelSizeInput.value),
+                paletteSize: parseInt(paletteSizeInput.value),
+                palettePreset: palettePresetSelect.value,
+                ditheringAlgorithm: ditheringAlgorithmSelect.value,
+                ditheringIntensity: parseInt(ditheringIntensityInput.value),
+                hue: parseInt(hueInput.value),
+                brightness: parseInt(brightnessInput.value),
+                contrast: parseInt(contrastInput.value),
+                saturation: parseInt(saturationInput.value),
+                gamma: parseInt(gammaInput.value)
+            };
+
+            const jsonString = JSON.stringify(settings, null, 2); // Pretty print JSON
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pixel_art_settings.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showMessage('Settings downloaded!', 'success');
+        });
+
+        // Event listener for Upload Settings file input
+        uploadSettingsInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const loadedSettings = JSON.parse(e.target.result);
+                    applyLoadedSettings(loadedSettings);
+                    showMessage('Settings loaded successfully!', 'success');
+                } catch (error) {
+                    console.error("Error parsing settings file:", error);
+                    showMessage('Invalid settings file. Please upload a valid JSON.', 'error');
+                }
+            };
+            reader.onerror = () => {
+                showMessage('Error reading settings file. Please try again.', 'error');
+            };
+            reader.readAsText(file);
+        });
+
+        // Function to apply loaded settings to the UI
+        function applyLoadedSettings(settings) {
+            // Apply numeric inputs
+            outputWidthInput.value = settings.outputWidth || outputWidthInput.value;
+            outputHeightInput.value = settings.outputHeight || outputHeightInput.value;
+            pixelSizeInput.value = settings.pixelSize || pixelSizeInput.value;
+            paletteSizeInput.value = settings.paletteSize || paletteSizeInput.value;
+            ditheringIntensityInput.value = settings.ditheringIntensity !== undefined ? settings.ditheringIntensity : ditheringIntensityInput.value;
+            hueInput.value = settings.hue !== undefined ? settings.hue : hueInput.value;
+            brightnessInput.value = settings.brightness !== undefined ? settings.brightness : brightnessInput.value;
+            contrastInput.value = settings.contrast !== undefined ? settings.contrast : contrastInput.value;
+            saturationInput.value = settings.saturation !== undefined ? settings.saturation : saturationInput.value;
+            gammaInput.value = settings.gamma !== undefined ? settings.gamma : gammaInput.value;
+
+            // Apply dropdowns
+            palettePresetSelect.value = settings.palettePreset || 'custom';
+            ditheringAlgorithmSelect.value = settings.ditheringAlgorithm || 'floyd-steinberg';
+
+            // Trigger change events to update spans and processing logic
+            pixelSizeInput.dispatchEvent(new Event('input'));
+            paletteSizeInput.dispatchEvent(new Event('input'));
+            ditheringIntensityInput.dispatchEvent(new Event('input'));
+            hueInput.dispatchEvent(new Event('input'));
+            brightnessInput.dispatchEvent(new Event('input'));
+            contrastInput.dispatchEvent(new Event('input'));
+            saturationInput.dispatchEvent(new Event('input'));
+            gammaInput.dispatchEvent(new Event('input'));
+            palettePresetSelect.dispatchEvent(new Event('change')); // This will handle paletteSizeInput.disabled
+            ditheringAlgorithmSelect.dispatchEvent(new Event('change'));
+
+            // Finally, trigger image processing
+            triggerProcessImage();
+        }
+
+
+        // Function to trigger image processing, with a small delay to prevent rapid re-processing
+        let processTimeout;
+        function triggerProcessImage() {
+            clearTimeout(processTimeout);
+            processTimeout = setTimeout(() => {
+                if (originalImage) {
+                    const outputWidth = parseInt(outputWidthInput.value);
+                    const outputHeight = parseInt(outputHeightInput.value);
+                    const pixelSize = parseInt(pixelSizeInput.value);
+                    const paletteSize = parseInt(paletteSizeInput.value); // This will be used if custom, or ignored if preset
+
+                    // Basic validation before processing
+                    if (isNaN(outputWidth) || outputWidth <= 0 || outputWidth > MAX_WIDTH ||
+                        isNaN(outputHeight) || outputHeight <= 0 || outputHeight > MAX_HEIGHT ||
+                        isNaN(pixelSize) || pixelSize < 2 || pixelSize > 30 ||
+                        isNaN(paletteSize) || paletteSize < 1 || paletteSize > 32) {
+                        return; // Don't show error messages during live updates
+                    }
+
+                    showLoading();
+                    try {
+                        processImage(outputWidth, outputHeight, pixelSize, paletteSize);
+                        hideLoading();
+                        downloadLink.style.display = 'block';
+                    } catch (error) {
+                        console.error("Error during image processing:", error);
+                        showMessage('An error occurred during processing. Please try again.', 'error');
+                        hideLoading();
+                    }
+                }
+            }, 100); // Debounce time
+        }
+
+
+        // Event listener for convert button click (for explicit conversion)
+        convertBtn.addEventListener('click', () => {
+            if (!originalImage) {
+                showMessage('Please upload an image first.');
+                return;
+            }
+
+            const outputWidth = parseInt(outputWidthInput.value);
+            const outputHeight = parseInt(outputHeightInput.value);
+            const pixelSize = parseInt(pixelSizeInput.value);
+            const paletteSize = parseInt(paletteSizeInput.value);
+
+            // Validate dimensions (more strict for explicit convert click)
+            if (isNaN(outputWidth) || outputWidth <= 0 || outputWidth > MAX_WIDTH) {
+                showMessage(`Output width must be between 1 and ${MAX_WIDTH}.`);
+                return;
+            }
+            if (isNaN(outputHeight) || outputHeight <= 0 || outputHeight > MAX_HEIGHT) {
+                showMessage(`Output height must be between 1 and ${MAX_HEIGHT}.`);
+                return;
+            }
+            if (isNaN(pixelSize) || pixelSize < 2 || pixelSize > 30) {
+                showMessage('Pixelation level must be between 2 and 30.');
+                return;
+            }
+            if (isNaN(paletteSize) || paletteSize < 1 || paletteSize > 32) {
+                showMessage(`Palette size must be between 1 and 32.`);
+                return;
+            }
+
+            hideMessage();
+            showLoading();
+
+            // Use a timeout to allow the loading spinner to render before heavy processing
+            setTimeout(() => {
+                try {
+                    processImage(outputWidth, outputHeight, pixelSize, paletteSize);
+                    hideLoading();
+                    downloadLink.style.display = 'block';
+                    showMessage('Image converted successfully!', 'success');
+                } catch (error) {
+                    console.error("Error during image processing:", error);
+                    showMessage('An error occurred during processing. Please try again.', 'error');
+                    hideLoading();
+                }
+            }, 50); // Small delay
+        });
+
+
+        // Helper function to convert RGB to HSL
+        function rgbToHsl(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max === min) {
+                h = s = 0; // achromatic
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return [h * 360, s, l];
+        }
+
+        // Helper function to convert HSL to RGB
+        function hslToRgb(h, s, l) {
+            h /= 360; // Convert hue to [0, 1]
+            let r, g, b;
+
+            if (s === 0) {
+                r = g = b = l; // achromatic
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1 / 6) return p + (q - p) * 6 * t;
+                    if (t < 1 / 2) return q;
+                    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1 / 3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1 / 3);
+            }
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+
+        // Function to apply image adjustments
+        function applyAdjustments(pixels, width, height, hue, brightness, contrast, saturation, gamma) {
+            const numPixels = width * height;
+
+            // Convert percentages to factors
+            const brightnessFactor = brightness / 100; // 0 to 2
+            const contrastFactor = contrast / 100;     // 0 to 2
+            const saturationFactor = saturation / 100; // 0 to 2
+            const gammaFactor = gamma / 100;           // 0.1 to 3.0
+
+            for (let i = 0; i < pixels.length; i += 4) {
+                let r = pixels[i];
+                let g = pixels[i + 1];
+                let b = pixels[i + 2];
+                // Alpha (pixels[i + 3]) is not modified
+
+                // 1. Brightness
+                r *= brightnessFactor;
+                g *= brightnessFactor;
+                b *= brightnessFactor;
+
+                // 2. Contrast
+                // Scale values around 128 (midpoint)
+                r = ((r - 128) * contrastFactor) + 128;
+                g = ((g - 128) * contrastFactor) + 128;
+                b = ((b - 128) * contrastFactor) + 128;
+
+                // 3. Hue and Saturation (HSL conversion)
+                let [h, s, l] = rgbToHsl(r, g, b);
+
+                // Adjust Hue
+                h = (h + hue) % 360;
+                if (h < 0) h += 360; // Ensure positive hue
+
+                // Adjust Saturation
+                s *= saturationFactor;
+                s = Math.max(0, Math.min(1, s)); // Clamp saturation between 0 and 1
+
+                [r, g, b] = hslToRgb(h, s, l);
+
+                // 4. Gamma
+                r = 255 * Math.pow(r / 255, gammaFactor);
+                g = 255 * Math.pow(g / 255, gammaFactor);
+                b = 255 * Math.pow(b / 255, gammaFactor);
+
+                // Clamp RGB values to 0-255
+                pixels[i] = Math.max(0, Math.min(255, r));
+                pixels[i + 1] = Math.max(0, Math.min(255, g));
+                pixels[i + 2] = Math.max(0, Math.min(255, b));
+            }
+        }
+
+
+        // Main image processing function
+        function processImage(outputWidth, outputHeight, pixelSize, paletteSize) {
+            // Clear and draw original image to originalCanvas
+            originalCanvas.width = originalImage.naturalWidth;
+            originalCanvas.height = originalImage.naturalHeight;
+            originalCtx.clearRect(0, 0, originalCanvas.width, originalCanvas.height);
+            originalCtx.drawImage(originalImage, 0, 0);
+
+            // Get pixel data from the original (full-res) image for adjustments
+            const originalImageData = originalCtx.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+            const originalPixels = originalImageData.data;
+
+            // Apply adjustments to the original pixel data
+            applyAdjustments(
+                originalPixels,
+                originalCanvas.width,
+                originalCanvas.height,
+                parseInt(hueInput.value),
+                parseInt(brightnessInput.value),
+                parseInt(contrastInput.value),
+                parseInt(saturationInput.value),
+                parseFloat(gammaInput.value) // Pass raw value, conversion inside applyAdjustments
+            );
+            // Put adjusted pixels back onto the original canvas
+            originalCtx.putImageData(originalImageData, 0, 0);
+
+
+            // --- Step 1: Pixelation ---
+            // Create a temporary canvas for pixelation
+            const tempPixelCanvas = document.createElement('canvas');
+            const tempPixelCtx = tempPixelCanvas.getContext('2d', { willReadFrequently: true });
+
+            // Calculate downsampled dimensions for pixelation
+            const pixelatedWidth = Math.floor(originalCanvas.width / pixelSize);
+            const pixelatedHeight = Math.floor(originalCanvas.height / pixelSize);
+
+            tempPixelCanvas.width = pixelatedWidth;
+            tempPixelCanvas.height = pixelatedHeight;
+
+            // Draw the ADJUSTED original image scaled down to the pixelated dimensions
+            // This effectively averages colors over 'pixelSize' blocks after adjustments
+            tempPixelCtx.drawImage(originalCanvas, 0, 0, pixelatedWidth, pixelatedHeight);
+
+            // Get the pixel data from the downsampled image
+            const imageData = tempPixelCtx.getImageData(0, 0, pixelatedWidth, pixelatedHeight);
+            const pixels = imageData.data; // This is a Uint8ClampedArray
+
+            // --- Step 2: Color Quantization with Palette Enforcement ---
+            let targetPalette;
+            const selectedPreset = palettePresetSelect.value;
+
+            if (selectedPreset === 'custom') {
+                // If custom, generate a palette using K-means based on paletteSize slider
+                const uniqueColors = new Set();
+                const sampleStep = Math.max(1, Math.floor(pixels.length / (pixelatedWidth * pixelatedHeight * 4 / 100)));
+                for (let i = 0; i < pixels.length; i += 4 * sampleStep) {
+                    const r = pixels[i];
+                    const g = pixels[i + 1];
+                    const b = pixels[i + 2];
+                    uniqueColors.add(`${r},${g},${b}`);
+                }
+                const colorsArray = Array.from(uniqueColors).map(colorStr => {
+                    const parts = colorStr.split(',').map(Number);
+                    return { r: parts[0], g: parts[1], b: parts[2] };
+                });
+
+                targetPalette = [];
+                if (colorsArray.length > 0) {
+                    const numColorsToPick = Math.min(paletteSize, colorsArray.length);
+                    for (let i = 0; i < numColorsToPick; i++) {
+                        targetPalette.push(colorsArray[Math.floor(i * colorsArray.length / numColorsToPick)]);
+                    }
+                    while (targetPalette.length < paletteSize) {
+                        targetPalette.push(colorsArray[Math.floor(Math.random() * colorsArray.length)]);
+                    }
+                } else {
+                    for (let i = 0; i < paletteSize; i++) {
+                        const val = Math.round((i / (paletteSize - 1)) * 255);
+                        targetPalette.push({ r: val, g: val, b: val });
+                    }
+                }
+
+                const maxIterations = 20;
+                for (let iter = 0; iter < maxIterations; iter++) {
+                    const clusters = Array.from({ length: paletteSize }, () => []);
+                    colorsArray.forEach(color => {
+                        let minDistance = Infinity;
+                        let closestCentroidIndex = -1;
+                        for (let i = 0; i < targetPalette.length; i++) {
+                            const c = targetPalette[i];
+                            const distance = Math.sqrt(Math.pow(color.r - c.r, 2) + Math.pow(color.g - c.g, 2) + Math.pow(color.b - c.b, 2));
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                                closestCentroidIndex = i;
+                            }
+                        }
+                        if (closestCentroidIndex !== -1) {
+                            clusters[closestCentroidIndex].push(color);
+                        }
+                    });
+                    let newPalette = [];
+                    let changed = false;
+                    for (let i = 0; i < clusters.length; i++) {
+                        if (clusters[i].length > 0) {
+                            const sumR = clusters[i].reduce((sum, c) => sum + c.r, 0);
+                            const sumG = clusters[i].reduce((sum, c) => sum + c.g, 0);
+                            const sumB = clusters[i].reduce((sum, c) => sum + c.b, 0);
+                            const newR = Math.round(sumR / clusters[i].length);
+                            const newG = Math.round(sumG / clusters[i].length);
+                            const newB = Math.round(sumB / clusters[i].length);
+                            const newCentroid = { r: newR, g: newG, b: newB };
+                            newPalette.push(newCentroid);
+                            if (targetPalette[i] && (targetPalette[i].r !== newR || targetPalette[i].g !== newG || targetPalette[i].b !== newB)) {
+                                changed = true;
+                            }
+                        } else {
+                            if (colorsArray.length > 0) {
+                                newPalette.push(colorsArray[Math.floor(Math.random() * colorsArray.length)]);
+                                changed = true;
+                            } else {
+                                newPalette.push(targetPalette[i] || { r: 0, g: 0, b: 0 });
+                            }
+                        }
+                    }
+                    targetPalette = newPalette;
+                    if (!changed) break;
+                }
+
+            } else {
+                // Use predefined palette
+                targetPalette = predefinedPalettes[selectedPreset].map(hex => {
+                    const r = parseInt(hex.substring(1, 3), 16);
+                    const g = parseInt(hex.substring(3, 5), 16);
+                    const b = parseInt(hex.substring(5, 7), 16);
+                    return { r, g, b };
+                });
+            }
+
+
+            // Function to find the closest color in the palette
+            function findClosestColor(r, g, b, palette) {
+                let minDistance = Infinity;
+                let closestColor = { r: 0, g: 0, b: 0 }; // Default to black
+
+                palette.forEach(pColor => {
+                    const distance = Math.sqrt(
+                        Math.pow(r - pColor.r, 2) +
+                        Math.pow(g - pColor.g, 2) +
+                        Math.pow(b - pColor.b, 2)
+                    );
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestColor = pColor;
+                    }
+                });
+                return closestColor;
+            }
+
+            // --- Step 3: Apply Palette and Dithering ---
+            const ditheredPixels = new Float32Array(pixels.length);
+            for (let i = 0; i < pixels.length; i++) {
+                ditheredPixels[i] = pixels[i]; // Copy original pixel values
+            }
+
+            const ditheringType = ditheringAlgorithmSelect.value;
+            const ditheringIntensity = parseInt(ditheringIntensityInput.value) / 100; // 0 to 2
+
+            for (let y = 0; y < pixelatedHeight; y++) {
+                for (let x = 0; x < pixelatedWidth; x++) {
+                    const i = (y * pixelatedWidth + x) * 4;
+
+                    const oldR = ditheredPixels[i];
+                    const oldG = ditheredPixels[i + 1];
+                    const oldB = ditheredPixels[i + 2];
+
+                    const closest = findClosestColor(oldR, oldG, oldB, targetPalette);
+
+                    // Apply the quantized color to the actual imageData (pixels array)
+                    pixels[i] = closest.r;
+                    pixels[i + 1] = closest.g;
+                    pixels[i + 2] = closest.b;
+                    // pixels[i + 3] remains original alpha
+
+                    if (ditheringType !== 'none') {
+                        const errR = oldR - closest.r;
+                        const errG = oldG - closest.g;
+                        const errB = oldB - closest.b;
+
+                        // Scale error by intensity
+                        const scaledErrR = errR * ditheringIntensity;
+                        const scaledErrG = errG * ditheringIntensity;
+                        const scaledErrB = errB * ditheringIntensity;
+
+                        if (ditheringType === 'floyd-steinberg') {
+                            // Distribute error to neighbors (Floyd-Steinberg coefficients)
+                            if (x + 1 < pixelatedWidth) {
+                                ditheredPixels[i + 4] += scaledErrR * (7 / 16);
+                                ditheredPixels[i + 5] += scaledErrG * (7 / 16);
+                                ditheredPixels[i + 6] += scaledErrB * (7 / 16);
+                            }
+                            if (x - 1 >= 0 && y + 1 < pixelatedHeight) {
+                                const nextRowIndex = ((y + 1) * pixelatedWidth + (x - 1)) * 4;
+                                ditheredPixels[nextRowIndex] += scaledErrR * (3 / 16);
+                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (3 / 16);
+                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (3 / 16);
+                            }
+                            if (y + 1 < pixelatedHeight) {
+                                const nextRowIndex = ((y + 1) * pixelatedWidth + x) * 4;
+                                ditheredPixels[nextRowIndex] += scaledErrR * (5 / 16);
+                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (5 / 16);
+                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (5 / 16);
+                            }
+                            if (x + 1 < pixelatedWidth && y + 1 < pixelatedHeight) {
+                                const nextRowIndex = ((y + 1) * pixelatedWidth + (x + 1)) * 4;
+                                ditheredPixels[nextRowIndex] += scaledErrR * (1 / 16);
+                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (1 / 16);
+                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (1 / 16);
+                            }
+                        } else if (ditheringType === 'atkinson') {
+                            // Atkinson dithering coefficients
+                            // (x+1, y) 1/8
+                            if (x + 1 < pixelatedWidth) {
+                                ditheredPixels[i + 4] += scaledErrR * (1 / 8);
+                                ditheredPixels[i + 5] += scaledErrG * (1 / 8);
+                                ditheredPixels[i + 6] += scaledErrB * (1 / 8);
+                            }
+                            // (x+2, y) 1/8
+                            if (x + 2 < pixelatedWidth) {
+                                ditheredPixels[i + 8] += scaledErrR * (1 / 8);
+                                ditheredPixels[i + 9] += scaledErrG * (1 / 8);
+                                ditheredPixels[i + 10] += scaledErrB * (1 / 8);
+                            }
+                            // (x-1, y+1) 1/8
+                            if (x - 1 >= 0 && y + 1 < pixelatedHeight) {
+                                const nextRowIndex = ((y + 1) * pixelatedWidth + (x - 1)) * 4;
+                                ditheredPixels[nextRowIndex] += scaledErrR * (1 / 8);
+                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (1 / 8);
+                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (1 / 8);
+                            }
+                            // (x, y+1) 1/8
+                            if (y + 1 < pixelatedHeight) {
+                                const nextRowIndex = ((y + 1) * pixelatedWidth + x) * 4;
+                                ditheredPixels[nextRowIndex] += scaledErrR * (1 / 8);
+                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (1 / 8);
+                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (1 / 8);
+                            }
+                            // (x+1, y+1) 1/8
+                            if (x + 1 < pixelatedWidth && y + 1 < pixelatedHeight) {
+                                const nextRowIndex = ((y + 1) * pixelatedWidth + (x + 1)) * 4;
+                                ditheredPixels[nextRowIndex] += scaledErrR * (1 / 8);
+                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (1 / 8);
+                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (1 / 8);
+                            }
+                            // (x, y+2) 1/8
+                            if (y + 2 < pixelatedHeight) {
+                                const nextRowIndex = ((y + 2) * pixelatedWidth + x) * 4;
+                                ditheredPixels[nextRowIndex] += scaledErrR * (1 / 8);
+                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (1 / 8);
+                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (1 / 8);
+                            }
+                        } else if (ditheringType === 'ordered') {
+                            // Ordered Dithering (Bayer Matrix)
+                            const bayerValue = bayerMatrix8x8[y % bayerMatrixSize][x % bayerMatrixSize];
+                            const threshold = (bayerValue / (bayerMatrixSize * bayerMatrixSize)) * 2 * ditheringIntensity; // Scale threshold by intensity
+
+                            // Apply thresholding to each color channel
+                            // This is a simplified application for ordered dithering with a fixed palette.
+                            // For true ordered dithering, you'd typically compare against the closest two colors
+                            // and blend based on the threshold. Here, we're using it to perturb the original
+                            // color slightly before finding the closest palette color.
+                            pixels[i] = Math.max(0, Math.min(255, oldR + scaledErrR * threshold));
+                            pixels[i + 1] = Math.max(0, Math.min(255, oldG + scaledErrG * threshold));
+                            pixels[i + 2] = Math.max(0, Math.min(255, oldB + scaledErrB * threshold));
+                            // Re-find closest color after perturbation for ordered dithering effect
+                            const perturbedClosest = findClosestColor(pixels[i], pixels[i+1], pixels[i+2], targetPalette);
+                            pixels[i] = perturbedClosest.r;
+                            pixels[i+1] = perturbedClosest.g;
+                            pixels[i+2] = perturbedClosest.b;
+                        }
+                    }
+                }
+            }
+
+            // Put the modified pixel data (now quantized and dithered) back onto the temporary canvas
+            tempPixelCtx.putImageData(imageData, 0, 0);
+
+            // --- Step 4: Resizing and Final Draw ---
+            outputCanvas.width = outputWidth;
+            outputCanvas.height = outputHeight;
+            ctx.clearRect(0, 0, outputWidth, outputHeight);
+            // Draw the pixelated, 4-color image onto the final output canvas, scaled up
+            ctx.imageSmoothingEnabled = false; // Important for crisp pixel art scaling
+            ctx.drawImage(tempPixelCanvas, 0, 0, outputWidth, outputHeight);
+
+            // Set download link
+            downloadBtn.href = outputCanvas.toDataURL('image/png');
+        }
+    </script>
+</body>
+</html>
