@@ -1,4 +1,4 @@
-I needed faux-pixel are for a project and so I made a faux-pixel art converter. It turns regular pictures into pixel art in the browser and you can download them quick and easy.
+I needed faux-pixel art for a project and so I made a faux-pixel art converter. It turns regular pictures into pixel art in the browser and you can download them quick and easy.
 
 Here's what it does:
 
