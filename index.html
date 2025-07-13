@@ -4,12 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kairos: Pixel Art Converter</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Define custom CSS variables for the palette */
+        :root {
+            --color-dark-red: #780000;
+            --color-red: #C1121F;
+            --color-cream: #FDF0D5;
+            --color-dark-blue: #003049;
+            --color-light-blue: #669BBC;
+            --color-gray-text: #374151; /* Existing dark gray for labels */
+            --color-border-light: #e5e7eb; /* Existing light border */
+            --color-bg-light-gray: #f9fafb; /* Existing lighter background for file input/canvas */
+        }
+
         body {
             font-family: "Inter", sans-serif;
-            background-color: #f0f4f8; /* Light blue-gray background */
+            background-color: var(--color-cream); /* Light cream background */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,103 +29,113 @@
             box-sizing: border-box;
         }
         .container {
-            background-color: #ffffff;
-            padding: 24px; /* Reduced padding */
+            background-color: #ffffff; /* Keep white for contrast, or use a very light cream */
+            padding: 24px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            max-width: 1000px; /* Adjusted max-width */
+            max-width: 1000px;
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 16px; /* Reduced gap */
+            gap: 24px; /* Slightly increased gap for better spacing */
         }
         .input-group label {
             font-weight: 600;
-            color: #374151; /* Darker gray for labels */
-            margin-bottom: 6px; /* Reduced margin */
+            color: var(--color-dark-blue); /* Dark blue for labels */
+            margin-bottom: 8px; /* Adjusted margin */
             display: block;
         }
         .input-group input[type="file"],
         .input-group input[type="number"],
         .input-group input[type="range"],
-        .input-group select { /* Added select for styling */
-            border: 1px solid #d1d5db;
-            padding: 8px 10px; /* Reduced padding */
+        .input-group select {
+            border: 1px solid var(--color-light-blue); /* Light blue border */
+            padding: 10px 12px; /* Adjusted padding */
             border-radius: 8px;
             width: 100%;
             box-sizing: border-box;
-            transition: border-color 0.2s ease-in-out;
-            background-color: #ffffff; /* Ensure select has white background */
-            appearance: none; /* Remove default arrow */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            background-color: #ffffff;
+            appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
-            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%20viewBox%3D%220%200%20292.4%20292.4%22%3E%3Cpath%20fill%3D%22%236B7280%22%20d%3D%22M287%2C197.3L159.2%2C69.5c-3.6-3.6-8.2-5.4-12.8-5.4s-9.2%2C1.8-12.8%2C5.4L5.4%2C197.3c-7.2%2C7.2-7.2%2C18.8%2C0%2C26.1c7.2%2C7.2%2C18.8%2C7.2%2C26.1%2C0l120.3-120.3l120.3%2C120.3c7.2%2C7.2%2C18.8%2C7.2%2C26.1%2C0C294.2%2C216.1%2C294.2%2C204.5%2C287%2C197.3z%22%2F%3E%3C%2Fsvg%3E');
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%20viewBox%3D%220%200%20292.4%20292.4%22%3E%3Cpath%20fill%3D%22%23003049%22%20d%3D%22M287%2C197.3L159.2%2C69.5c-3.6-3.6-8.2-5.4-12.8-5.4s-9.2%2C1.8-12.8%2C5.4L5.4%2C197.3c-7.2%2C7.2-7.2%2C18.8%2C0%2C26.1c7.2%2C7.2%2C18.8%2C7.2%2C26.1%2C0l120.3-120.3l120.3%2C120.3c7.2%2C7.2%2C18.8%2C7.2%2C26.1%2C0C294.2%2C216.1%2C294.2%2C204.5%2C287%2C197.3z%22%2F%3E%3C%2Fsvg%3E'); /* Dark blue arrow for select */
             background-repeat: no-repeat;
             background-position: right 0.7em top 50%, 0 0;
             background-size: 0.65em auto, 100%;
         }
         .input-group input[type="file"] {
-            border: 2px dashed #d1d5db; /* Light gray dashed border */
-            background-color: #f9fafb; /* Lighter background for file input */
+            border: 2px dashed var(--color-light-blue); /* Light blue dashed border */
+            background-color: var(--color-bg-light-gray);
             cursor: pointer;
         }
         .input-group input[type="file"]:hover {
-            border-color: #9ca3af; /* Darker gray on hover */
+            border-color: var(--color-dark-blue); /* Dark blue on hover */
         }
         .input-group input[type="number"]:focus,
         .input-group input[type="range"]:focus,
-        .input-group select:focus { /* Added select for focus style */
+        .input-group select:focus {
             outline: none;
-            border-color: #3b82f6; /* Blue focus ring */
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+            border-color: var(--color-red); /* Red focus ring */
+            box-shadow: 0 0 0 3px rgba(193, 18, 31, 0.25); /* Red shadow */
         }
         .btn-primary {
-            background-color: #3b82f6; /* Blue button */
+            background-color: var(--color-red); /* Red button */
             color: white;
-            padding: 10px 20px; /* Reduced padding */
+            padding: 12px 24px; /* Adjusted padding */
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s ease-in-out;
             border: none;
             width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .btn-primary:hover {
-            background-color: #2563eb; /* Darker blue on hover */
-            transform: translateY(-1px);
+            background-color: var(--color-dark-red); /* Darker red on hover */
+            transform: translateY(-2px); /* More pronounced lift */
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
         }
         .btn-primary:active {
             transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .btn-disabled {
             background-color: #9ca3af; /* Gray for disabled */
             cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
         }
         canvas {
-            border: 1px solid #e5e7eb; /* Light border for canvas */
+            border: 1px solid var(--color-light-blue); /* Light blue border for canvas */
             border-radius: 8px;
-            background-color: #f9fafb;
+            background-color: var(--color-bg-light-gray);
             max-width: 100%;
-            height: auto; /* Ensure canvas scales responsively */
-            display: block; /* Remove extra space below canvas */
+            height: auto;
+            display: block;
         }
         .message-box {
             background-color: #fef2f2; /* Light red for errors */
-            color: #ef4444; /* Red text */
-            padding: 10px; /* Reduced padding */
+            color: var(--color-dark-red); /* Dark red text */
+            padding: 12px; /* Adjusted padding */
             border-radius: 8px;
-            border: 1px solid #fca5a5;
-            margin-top: 12px; /* Reduced margin */
-            display: none; /* Hidden by default */
+            border: 1px solid var(--color-red); /* Red border */
+            margin-top: 16px; /* Adjusted margin */
+            display: none;
+        }
+        .message-box.bg-green-100 { /* Success message style */
+            background-color: #e6ffe6;
+            color: #008000;
+            border-color: #00cc00;
         }
         .loading-spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #3b82f6;
+            border: 4px solid rgba(0, 48, 73, 0.1); /* Dark blue with transparency */
+            border-left-color: var(--color-red); /* Red spinner */
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 32px; /* Slightly larger spinner */
+            height: 32px;
             animation: spin 1s linear infinite;
-            margin: 0 auto;
+            margin: 16px auto; /* Adjusted margin */
             display: none;
         }
         @keyframes spin {
@@ -122,26 +143,30 @@
             100% { transform: rotate(360deg); }
         }
         .download-link {
-            display: none; /* Hidden by default */
+            display: none;
             text-align: center;
-            margin-top: 12px; /* Reduced margin */
+            margin-top: 16px; /* Adjusted margin */
         }
         .download-link a {
-            color: #3b82f6;
+            color: var(--color-dark-blue); /* Dark blue link */
             text-decoration: none;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             gap: 8px;
             transition: color 0.2s ease-in-out;
+            padding: 8px 16px; /* Added padding to make it a better touch target */
+            border-radius: 8px;
+            border: 1px solid var(--color-light-blue);
         }
         .download-link a:hover {
-            color: #2563eb;
+            color: var(--color-red); /* Red on hover */
+            border-color: var(--color-red);
         }
         /* Flex layout for width/height inputs */
         .dimensions-group {
             display: flex;
-            gap: 12px; /* Reduced gap */
+            gap: 16px; /* Adjusted gap */
         }
         .dimensions-group .input-group {
             flex: 1;
@@ -151,14 +176,14 @@
         .adjustments-grid {
             display: grid;
             grid-template-columns: repeat(1, 1fr);
-            gap: 12px; /* Reduced gap */
+            gap: 16px; /* Adjusted gap */
         }
-        @media (min-width: 480px) { /* Adjust for smaller screens */
+        @media (min-width: 480px) {
             .adjustments-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
-        @media (min-width: 768px) { /* Adjust for larger screens */
+        @media (min-width: 768px) {
             .adjustments-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
@@ -168,25 +193,91 @@
         @media (min-width: 640px) {
             .container {
                 flex-direction: row;
-                gap: 24px; /* Maintain some gap between panels */
+                gap: 32px; /* Increased gap between panels */
             }
             .left-panel, .right-panel {
                 flex: 1;
             }
             .left-panel {
-                padding-right: 24px;
-                border-right: 1px solid #e5e7eb;
+                padding-right: 32px; /* Increased padding */
+                border-right: 1px solid var(--color-border-light);
             }
             .right-panel {
-                padding-left: 24px;
+                padding-left: 32px; /* Increased padding */
             }
+        }
+
+        /* Custom styling for range input track and thumb */
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: var(--color-light-blue); /* Light blue track */
+            border-radius: 8px;
+            height: 8px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            border: 2px solid var(--color-dark-blue); /* Dark blue border */
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--color-red); /* Red thumb */
+            cursor: pointer;
+            margin-top: -6px; /* Center thumb vertically */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: var(--color-dark-red); /* Dark red on hover */
+            border-color: var(--color-dark-red);
+        }
+
+        input[type="range"]::-moz-range-track {
+            background: var(--color-light-blue);
+            border-radius: 8px;
+            height: 8px;
+        }
+        input[type="range"]::-moz-range-thumb {
+            border: 2px solid var(--color-dark-blue);
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--color-red);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+        input[type="range"]::-moz-range-thumb:hover {
+            background: var(--color-dark-red);
+            border-color: var(--color-dark-red);
+        }
+
+        /* Headings */
+        h1.text-3xl {
+            color: var(--color-dark-blue); /* Dark blue for primary heading */
+        }
+        h2.text-xl, h2.text-2xl {
+            color: var(--color-dark-blue); /* Dark blue for subheadings */
+        }
+        hr.border-gray-200 {
+            border-color: var(--color-light-blue); /* Light blue for horizontal rule */
+        }
+
+        /* File upload button styling override for the upload settings input */
+        .input-group input[type="file"].btn-primary {
+            background-color: var(--color-light-blue) !important; /* Light blue for upload settings button */
+            color: var(--color-dark-blue) !important;
+            border: 1px solid var(--color-dark-blue) !important;
+        }
+        .input-group input[type="file"].btn-primary:hover {
+            background-color: var(--color-669BBC) !important; /* Slightly darker light blue on hover */
+            color: #ffffff !important;
+            border-color: var(--color-dark-blue) !important;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="left-panel flex flex-col gap-4"> <!-- Reduced gap -->
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">Kairos: Pixel Art Converter</h1> <!-- Reduced margin -->
+        <div class="left-panel flex flex-col gap-4">
+            <h1 class="text-3xl font-bold mb-4">Kairos: Pixel Art Converter</h1>
 
             <div class="input-group">
                 <label for="imageUpload">Upload Image (.jpeg, .png)</label>
@@ -196,11 +287,11 @@
             <div class="dimensions-group">
                 <div class="input-group">
                     <label for="outputWidth">Output Width (max 1920)</label>
-                    <input type="number" id="outputWidth" value="640" min="1" max="1920">
+                    <input type="number" id="outputWidth" value="800" min="1" max="1920">
                 </div>
                 <div class="input-group">
                     <label for="outputHeight">Output Height (max 1080)</label>
-                    <input type="number" id="outputHeight" value="480" min="1" max="1080">
+                    <input type="number" id="outputHeight" value="450" min="1" max="1080">
                 </div>
             </div>
 
@@ -229,10 +320,15 @@
             <div class="input-group">
                 <label for="ditheringAlgorithm">Dithering Algorithm</label>
                 <select id="ditheringAlgorithm" class="block w-full">
+                    <option value="none">None</option>
                     <option value="floyd-steinberg">Floyd-Steinberg</option>
                     <option value="atkinson">Atkinson</option>
                     <option value="ordered">Ordered (Bayer)</option>
-                    <option value="none">None</option>
+                    <option value="sierra">Sierra</option>
+                    <option value="two-row-sierra">Two-Row Sierra</option>
+                    <option value="jarvis-judice-ninke">Jarvis-Judice-Ninke</option>
+                    <option value="stucki">Stucki</option>
+                    <option value="burkes">Burkes</option>
                 </select>
             </div>
 
@@ -243,9 +339,9 @@
 
             <hr class="border-gray-200 my-2">
 
-            <h2 class="text-xl font-semibold text-gray-700">Image Adjustments</h2>
+            <h2 class="text-xl font-semibold">Image Adjustments</h2>
 
-            <div class="adjustments-grid"> <!-- New grid container for sliders -->
+            <div class="adjustments-grid">
                 <div class="input-group">
                     <label for="hue">Hue Rotation (<span id="hueValue">0</span>°)</label>
                     <input type="range" id="hue" min="0" max="360" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
@@ -274,14 +370,13 @@
                 <label for="uploadSettingsInput" class="sr-only">Upload Settings File</label>
                 <input type="file" id="uploadSettingsInput" accept=".json" class="btn-primary !bg-gray-200 !text-gray-800 hover:!bg-gray-300">
             </div>
-            <button id="convertBtn" class="btn-primary" disabled>Convert to Pixel Art</button>
-
+            
             <div id="loadingSpinner" class="loading-spinner"></div>
             <div id="messageBox" class="message-box"></div>
         </div>
 
         <div class="right-panel flex flex-col gap-6 items-center">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-2">Result</h2>
+            <h2 class="text-2xl font-semibold">Result</h2>
             <canvas id="outputCanvas" class="w-full h-auto"></canvas>
             <div id="downloadLink" class="download-link">
                 <a href="#" id="downloadBtn" download="pixel-art.png">
@@ -310,7 +405,7 @@
         const resetAdjustmentsBtn = document.getElementById('resetAdjustmentsBtn');
         const downloadSettingsBtn = document.getElementById('downloadSettingsBtn'); // New
         const uploadSettingsInput = document.getElementById('uploadSettingsInput'); // New
-        const convertBtn = document.getElementById('convertBtn');
+        // const convertBtn = document.getElementById('convertBtn'); // Removed
         const outputCanvas = document.getElementById('outputCanvas');
         const downloadLink = document.getElementById('downloadLink');
         const downloadBtn = document.getElementById('downloadBtn');
@@ -416,8 +511,6 @@
         // Function to show loading spinner for image processing
         function showLoading() {
             loadingSpinner.style.display = 'block';
-            convertBtn.disabled = true;
-            convertBtn.classList.add('btn-disabled');
             hideMessage();
             downloadLink.style.display = 'none';
         }
@@ -425,8 +518,6 @@
         // Function to hide loading spinner for image processing
         function hideLoading() {
             loadingSpinner.style.display = 'none';
-            convertBtn.disabled = false;
-            convertBtn.classList.remove('btn-disabled');
         }
 
         // Function to reset all adjustment sliders to their default values
@@ -447,7 +538,7 @@
             paletteSizeValueSpan.textContent = 16;
             paletteSizeInput.disabled = false; // Enable palette size slider
             palettePresetSelect.value = 'custom'; // Reset preset to custom
-            ditheringAlgorithmSelect.value = 'floyd-steinberg'; // Reset dithering to Floyd-Steinberg
+            ditheringAlgorithmSelect.value = 'none'; // Reset dithering to None
             ditheringIntensityInput.value = 100; // Reset dithering intensity
             ditheringIntensityValueSpan.textContent = 100;
 
@@ -462,8 +553,6 @@
             const file = event.target.files[0];
             if (!file) {
                 originalImage = null;
-                convertBtn.disabled = true;
-                convertBtn.classList.add('btn-disabled');
                 hideMessage();
                 downloadLink.style.display = 'none';
                 return;
@@ -473,8 +562,6 @@
             if (!file.type.match('image/jpeg') && !file.type.match('image/png')) {
                 showMessage('Please upload a .jpeg or .png image.');
                 originalImage = null;
-                convertBtn.disabled = true;
-                convertBtn.classList.add('btn-disabled');
                 return;
             }
 
@@ -490,22 +577,36 @@
                     let defaultWidth = Math.min(img.width, MAX_WIDTH);
                     let defaultHeight = Math.min(img.height, MAX_HEIGHT);
 
-                    if (img.width > MAX_WIDTH || img.height > MAX_HEIGHT) {
-                        const aspectRatio = img.width / img.height;
-                        if (aspectRatio > (MAX_WIDTH / MAX_HEIGHT)) {
-                            defaultWidth = MAX_WIDTH;
-                            defaultHeight = Math.round(MAX_WIDTH / aspectRatio);
-                        } else {
+                    // Prioritize landscape aspect ratio (16:9) if the original image is close or smaller than max
+                    const targetAspectRatio = 16 / 9;
+                    const originalAspectRatio = img.width / img.height;
+
+                    if (originalAspectRatio > targetAspectRatio) {
+                        // Original is wider than 16:9, or landscape. Fit to max width.
+                        defaultWidth = Math.min(img.width, MAX_WIDTH);
+                        defaultHeight = Math.round(defaultWidth / originalAspectRatio);
+                        if (defaultHeight > MAX_HEIGHT) { // If height exceeds max, scale by height instead
                             defaultHeight = MAX_HEIGHT;
-                            defaultWidth = Math.round(MAX_HEIGHT * aspectRatio);
+                            defaultWidth = Math.round(defaultHeight * originalAspectRatio);
+                        }
+                    } else {
+                        // Original is taller than 16:9, or portrait/square. Fit to max height.
+                        defaultHeight = Math.min(img.height, MAX_HEIGHT);
+                        defaultWidth = Math.round(defaultHeight * originalAspectRatio);
+                        if (defaultWidth > MAX_WIDTH) { // If width exceeds max, scale by width instead
+                            defaultWidth = MAX_WIDTH;
+                            defaultHeight = Math.round(defaultWidth / originalAspectRatio);
                         }
                     }
+
+                    // Ensure dimensions are within limits after adjustment
+                    defaultWidth = Math.min(defaultWidth, MAX_WIDTH);
+                    defaultHeight = Math.min(defaultHeight, MAX_HEIGHT);
+
 
                     outputWidthInput.value = defaultWidth;
                     outputHeightInput.value = defaultHeight;
 
-                    convertBtn.disabled = false;
-                    convertBtn.classList.remove('btn-disabled');
                     hideLoading();
                     // Automatically process image after loading and setting defaults
                     triggerProcessImage();
@@ -513,8 +614,6 @@
                 img.onerror = () => {
                     showMessage('Could not load image. Please try another file.');
                     originalImage = null;
-                    convertBtn.disabled = true;
-                    convertBtn.classList.add('btn-disabled');
                     hideLoading();
                 };
                 img.src = e.target.result;
@@ -522,8 +621,6 @@
             reader.onerror = () => {
                 showMessage('Error reading file. Please try again.');
                 originalImage = null;
-                convertBtn.disabled = true;
-                convertBtn.classList.add('btn-disabled');
                 hideLoading();
             };
             reader.readAsDataURL(file);
@@ -723,7 +820,7 @@
 
             // Apply dropdowns
             palettePresetSelect.value = settings.palettePreset || 'custom';
-            ditheringAlgorithmSelect.value = settings.ditheringAlgorithm || 'floyd-steinberg';
+            ditheringAlgorithmSelect.value = settings.ditheringAlgorithm || 'none'; // Changed default to 'none'
 
             // Trigger change events to update spans and processing logic
             pixelSizeInput.dispatchEvent(new Event('input'));
@@ -774,55 +871,6 @@
                 }
             }, 100); // Debounce time
         }
-
-
-        // Event listener for convert button click (for explicit conversion)
-        convertBtn.addEventListener('click', () => {
-            if (!originalImage) {
-                showMessage('Please upload an image first.');
-                return;
-            }
-
-            const outputWidth = parseInt(outputWidthInput.value);
-            const outputHeight = parseInt(outputHeightInput.value);
-            const pixelSize = parseInt(pixelSizeInput.value);
-            const paletteSize = parseInt(paletteSizeInput.value);
-
-            // Validate dimensions (more strict for explicit convert click)
-            if (isNaN(outputWidth) || outputWidth <= 0 || outputWidth > MAX_WIDTH) {
-                showMessage(`Output width must be between 1 and ${MAX_WIDTH}.`);
-                return;
-            }
-            if (isNaN(outputHeight) || outputHeight <= 0 || outputHeight > MAX_HEIGHT) {
-                showMessage(`Output height must be between 1 and ${MAX_HEIGHT}.`);
-                return;
-            }
-            if (isNaN(pixelSize) || pixelSize < 2 || pixelSize > 30) {
-                showMessage('Pixelation level must be between 2 and 30.');
-                return;
-            }
-            if (isNaN(paletteSize) || paletteSize < 1 || paletteSize > 32) {
-                showMessage(`Palette size must be between 1 and 32.`);
-                return;
-            }
-
-            hideMessage();
-            showLoading();
-
-            // Use a timeout to allow the loading spinner to render before heavy processing
-            setTimeout(() => {
-                try {
-                    processImage(outputWidth, outputHeight, pixelSize, paletteSize);
-                    hideLoading();
-                    downloadLink.style.display = 'block';
-                    showMessage('Image converted successfully!', 'success');
-                } catch (error) {
-                    console.error("Error during image processing:", error);
-                    showMessage('An error occurred during processing. Please try again.', 'error');
-                    hideLoading();
-                }
-            }, 50); // Small delay
-        });
 
 
         // Helper function to convert RGB to HSL
@@ -1119,91 +1167,115 @@
                         const scaledErrG = errG * ditheringIntensity;
                         const scaledErrB = errB * ditheringIntensity;
 
-                        if (ditheringType === 'floyd-steinberg') {
-                            // Distribute error to neighbors (Floyd-Steinberg coefficients)
-                            if (x + 1 < pixelatedWidth) {
-                                ditheredPixels[i + 4] += scaledErrR * (7 / 16);
-                                ditheredPixels[i + 5] += scaledErrG * (7 / 16);
-                                ditheredPixels[i + 6] += scaledErrB * (7 / 16);
+                        // Helper for distributing error
+                        const distributeError = (xOffset, yOffset, coefficient) => {
+                            const nx = x + xOffset;
+                            const ny = y + yOffset;
+                            if (nx >= 0 && nx < pixelatedWidth && ny >= 0 && ny < pixelatedHeight) {
+                                const nIndex = (ny * pixelatedWidth + nx) * 4;
+                                ditheredPixels[nIndex] += scaledErrR * coefficient;
+                                ditheredPixels[nIndex + 1] += scaledErrG * coefficient;
+                                ditheredPixels[nIndex + 2] += scaledErrB * coefficient;
                             }
-                            if (x - 1 >= 0 && y + 1 < pixelatedHeight) {
-                                const nextRowIndex = ((y + 1) * pixelatedWidth + (x - 1)) * 4;
-                                ditheredPixels[nextRowIndex] += scaledErrR * (3 / 16);
-                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (3 / 16);
-                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (3 / 16);
-                            }
-                            if (y + 1 < pixelatedHeight) {
-                                const nextRowIndex = ((y + 1) * pixelatedWidth + x) * 4;
-                                ditheredPixels[nextRowIndex] += scaledErrR * (5 / 16);
-                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (5 / 16);
-                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (5 / 16);
-                            }
-                            if (x + 1 < pixelatedWidth && y + 1 < pixelatedHeight) {
-                                const nextRowIndex = ((y + 1) * pixelatedWidth + (x + 1)) * 4;
-                                ditheredPixels[nextRowIndex] += scaledErrR * (1 / 16);
-                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (1 / 16);
-                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (1 / 16);
-                            }
-                        } else if (ditheringType === 'atkinson') {
-                            // Atkinson dithering coefficients
-                            // (x+1, y) 1/8
-                            if (x + 1 < pixelatedWidth) {
-                                ditheredPixels[i + 4] += scaledErrR * (1 / 8);
-                                ditheredPixels[i + 5] += scaledErrG * (1 / 8);
-                                ditheredPixels[i + 6] += scaledErrB * (1 / 8);
-                            }
-                            // (x+2, y) 1/8
-                            if (x + 2 < pixelatedWidth) {
-                                ditheredPixels[i + 8] += scaledErrR * (1 / 8);
-                                ditheredPixels[i + 9] += scaledErrG * (1 / 8);
-                                ditheredPixels[i + 10] += scaledErrB * (1 / 8);
-                            }
-                            // (x-1, y+1) 1/8
-                            if (x - 1 >= 0 && y + 1 < pixelatedHeight) {
-                                const nextRowIndex = ((y + 1) * pixelatedWidth + (x - 1)) * 4;
-                                ditheredPixels[nextRowIndex] += scaledErrR * (1 / 8);
-                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (1 / 8);
-                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (1 / 8);
-                            }
-                            // (x, y+1) 1/8
-                            if (y + 1 < pixelatedHeight) {
-                                const nextRowIndex = ((y + 1) * pixelatedWidth + x) * 4;
-                                ditheredPixels[nextRowIndex] += scaledErrR * (1 / 8);
-                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (1 / 8);
-                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (1 / 8);
-                            }
-                            // (x+1, y+1) 1/8
-                            if (x + 1 < pixelatedWidth && y + 1 < pixelatedHeight) {
-                                const nextRowIndex = ((y + 1) * pixelatedWidth + (x + 1)) * 4;
-                                ditheredPixels[nextRowIndex] += scaledErrR * (1 / 8);
-                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (1 / 8);
-                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (1 / 8);
-                            }
-                            // (x, y+2) 1/8
-                            if (y + 2 < pixelatedHeight) {
-                                const nextRowIndex = ((y + 2) * pixelatedWidth + x) * 4;
-                                ditheredPixels[nextRowIndex] += scaledErrR * (1 / 8);
-                                ditheredPixels[nextRowIndex + 1] += scaledErrG * (1 / 8);
-                                ditheredPixels[nextRowIndex + 2] += scaledErrB * (1 / 8);
-                            }
-                        } else if (ditheringType === 'ordered') {
-                            // Ordered Dithering (Bayer Matrix)
-                            const bayerValue = bayerMatrix8x8[y % bayerMatrixSize][x % bayerMatrixSize];
-                            const threshold = (bayerValue / (bayerMatrixSize * bayerMatrixSize)) * 2 * ditheringIntensity; // Scale threshold by intensity
+                        };
 
-                            // Apply thresholding to each color channel
-                            // This is a simplified application for ordered dithering with a fixed palette.
-                            // For true ordered dithering, you'd typically compare against the closest two colors
-                            // and blend based on the threshold. Here, we're using it to perturb the original
-                            // color slightly before finding the closest palette color.
-                            pixels[i] = Math.max(0, Math.min(255, oldR + scaledErrR * threshold));
-                            pixels[i + 1] = Math.max(0, Math.min(255, oldG + scaledErrG * threshold));
-                            pixels[i + 2] = Math.max(0, Math.min(255, oldB + scaledErrB * threshold));
-                            // Re-find closest color after perturbation for ordered dithering effect
-                            const perturbedClosest = findClosestColor(pixels[i], pixels[i+1], pixels[i+2], targetPalette);
-                            pixels[i] = perturbedClosest.r;
-                            pixels[i+1] = perturbedClosest.g;
-                            pixels[i+2] = perturbedClosest.b;
+                        switch (ditheringType) {
+                            case 'floyd-steinberg':
+                                distributeError(1, 0, 7 / 16);
+                                distributeError(-1, 1, 3 / 16);
+                                distributeError(0, 1, 5 / 16);
+                                distributeError(1, 1, 1 / 16);
+                                break;
+                            case 'atkinson':
+                                distributeError(1, 0, 1 / 8);
+                                distributeError(2, 0, 1 / 8);
+                                distributeError(-1, 1, 1 / 8);
+                                distributeError(0, 1, 1 / 8);
+                                distributeError(1, 1, 1 / 8);
+                                distributeError(0, 2, 1 / 8);
+                                break;
+                            case 'ordered':
+                                const bayerValue = bayerMatrix8x8[y % bayerMatrixSize][x % bayerMatrixSize];
+                                const threshold = (bayerValue / (bayerMatrixSize * bayerMatrixSize)) * 2 * ditheringIntensity;
+                                pixels[i] = Math.max(0, Math.min(255, oldR + scaledErrR * threshold));
+                                pixels[i + 1] = Math.max(0, Math.min(255, oldG + scaledErrG * threshold));
+                                pixels[i + 2] = Math.max(0, Math.min(255, oldB + scaledErrB * threshold));
+                                const perturbedClosest = findClosestColor(pixels[i], pixels[i+1], pixels[i+2], targetPalette);
+                                pixels[i] = perturbedClosest.r;
+                                pixels[i+1] = perturbedClosest.g;
+                                pixels[i+2] = perturbedClosest.b;
+                                break;
+                            case 'sierra':
+                                // Current row
+                                distributeError(1, 0, 5 / 32);
+                                distributeError(2, 0, 3 / 32);
+                                // Next row
+                                distributeError(-2, 1, 2 / 32);
+                                distributeError(-1, 1, 4 / 32);
+                                distributeError(0, 1, 5 / 32);
+                                distributeError(1, 1, 4 / 32);
+                                distributeError(2, 1, 2 / 32);
+                                // Row after next
+                                distributeError(-1, 2, 2 / 32);
+                                distributeError(0, 2, 3 / 32);
+                                distributeError(1, 2, 1 / 32);
+                                break;
+                            case 'two-row-sierra':
+                                // Current row
+                                distributeError(1, 0, 4 / 16);
+                                distributeError(2, 0, 3 / 16);
+                                // Next row
+                                distributeError(-2, 1, 1 / 16);
+                                distributeError(-1, 1, 2 / 16);
+                                distributeError(0, 1, 3 / 16);
+                                distributeError(1, 1, 2 / 16);
+                                distributeError(2, 1, 1 / 16);
+                                break;
+                            case 'jarvis-judice-ninke':
+                                // Current row
+                                distributeError(1, 0, 7 / 48);
+                                distributeError(2, 0, 5 / 48);
+                                // Next row
+                                distributeError(-2, 1, 3 / 48);
+                                distributeError(-1, 1, 5 / 48);
+                                distributeError(0, 1, 7 / 48);
+                                distributeError(1, 1, 5 / 48);
+                                distributeError(2, 1, 3 / 48);
+                                // Row after next
+                                distributeError(-2, 2, 1 / 48);
+                                distributeError(-1, 2, 3 / 48);
+                                distributeError(0, 2, 5 / 48);
+                                distributeError(1, 2, 3 / 48);
+                                distributeError(2, 2, 1 / 48);
+                                break;
+                            case 'stucki':
+                                // Current row
+                                distributeError(1, 0, 8 / 42);
+                                distributeError(2, 0, 4 / 42);
+                                // Next row
+                                distributeError(-2, 1, 2 / 42);
+                                distributeError(-1, 1, 4 / 42);
+                                distributeError(0, 1, 8 / 42);
+                                distributeError(1, 1, 4 / 42);
+                                distributeError(2, 1, 2 / 42);
+                                // Row after next
+                                distributeError(-2, 2, 1 / 42);
+                                distributeError(-1, 2, 2 / 42);
+                                distributeError(0, 2, 4 / 42);
+                                distributeError(1, 2, 2 / 42);
+                                distributeError(2, 2, 1 / 42);
+                                break;
+                            case 'burkes':
+                                // Current row
+                                distributeError(1, 0, 8 / 32);
+                                distributeError(2, 0, 4 / 32);
+                                // Next row
+                                distributeError(-2, 1, 2 / 32);
+                                distributeError(-1, 1, 4 / 32);
+                                distributeError(0, 1, 8 / 32);
+                                distributeError(1, 1, 4 / 32);
+                                distributeError(2, 1, 2 / 32);
+                                break;
                         }
                     }
                 }
