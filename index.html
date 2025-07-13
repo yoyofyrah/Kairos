@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kairos: Pixel Art Converter</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+20&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="img.png">
     <style>
         /* Define custom CSS variables for the palette */
         :root {
@@ -19,7 +25,7 @@
         }
 
         body {
-            font-family: "Inter", sans-serif;
+            font-family: "Inter", sans-serif; /* Reverted body font-family */
             background-color: var(--color-cream); /* Light cream background */
             display: flex;
             justify-content: center;
@@ -253,6 +259,7 @@
         /* Headings */
         h1.text-3xl {
             color: var(--color-dark-blue); /* Dark blue for primary heading */
+            font-family: "Jersey 20", cursive; /* Applied Jersey 20 to h1 */
         }
         h2.text-xl, h2.text-2xl {
             color: var(--color-dark-blue); /* Dark blue for subheadings */
@@ -280,34 +287,34 @@
             <h1 class="text-3xl font-bold mb-4">Kairos: Pixel Art Converter</h1>
 
             <div class="input-group">
-                <label for="imageUpload">Upload Image (.jpeg, .png)</label>
-                <input type="file" id="imageUpload" accept=".jpeg, .jpg, .png">
+                <label for="imageUpload" title="Upload an image file (JPEG or PNG) to start.">Upload Image (.jpeg, .png)</label>
+                <input type="file" id="imageUpload" accept=".jpeg, .jpg, .png" title="Click to select an image file." placeholder="No file chosen">
             </div>
 
             <div class="dimensions-group">
                 <div class="input-group">
-                    <label for="outputWidth">Output Width (max 1920)</label>
-                    <input type="number" id="outputWidth" value="800" min="1" max="1920">
+                    <label for="outputWidth" title="Set the desired width of the output pixel art.">Output Width (<span id="outputWidthValue">800</span>px)</label>
+                    <input type="number" id="outputWidth" value="800" min="1" max="1920" title="Enter the output width in pixels. Max 1920px.">
                 </div>
                 <div class="input-group">
-                    <label for="outputHeight">Output Height (max 1080)</label>
-                    <input type="number" id="outputHeight" value="450" min="1" max="1080">
+                    <label for="outputHeight" title="Set the desired height of the output pixel art.">Output Height (<span id="outputHeightValue">450</span>px)</label>
+                    <input type="number" id="outputHeight" value="450" min="1" max="1080" title="Enter the output height in pixels. Max 1080px.">
                 </div>
             </div>
 
             <div class="input-group">
-                <label for="pixelSize">Pixelation Level (<span id="pixelSizeValue">8</span>)</label>
-                <input type="range" id="pixelSize" min="2" max="30" value="8" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                <label for="pixelSize" title="Adjust the size of each 'pixel' block in the output. Higher value means larger pixels.">Pixelation Level (<span id="pixelSizeValue">8</span>)</label>
+                <input type="range" id="pixelSize" min="2" max="30" value="8" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" title="Slide to change pixel size. Double-click to reset.">
             </div>
 
             <div class="input-group">
-                <label for="paletteSize">Palette Size (<span id="paletteSizeValue">16</span> colors)</label>
-                <input type="range" id="paletteSize" min="1" max="32" value="16" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                <label for="paletteSize" title="Set the number of colors to use in the custom color palette.">Palette Size (<span id="paletteSizeValue">16</span> colors)</label>
+                <input type="range" id="paletteSize" min="1" max="32" value="16" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" title="Slide to change the number of colors. Double-click to reset.">
             </div>
 
             <div class="input-group">
-                <label for="palettePreset">Color Palette Preset</label>
-                <select id="palettePreset" class="block w-full">
+                <label for="palettePreset" title="Choose from predefined color palettes or use a custom one.">Color Palette Preset</label>
+                <select id="palettePreset" class="block w-full" title="Select a predefined palette. Choosing a preset disables palette size adjustment.">
                     <option value="custom">Custom</option>
                     <option value="gameboy">Game Boy (4 colors)</option>
                     <option value="nes">NES (64 colors)</option>
@@ -317,9 +324,12 @@
                 </select>
             </div>
 
+            <button id="randomizePaletteBtn" class="btn-primary" title="Generate a new random color palette.">Randomize Palette</button>
+            <button id="returnToOriginalPaletteBtn" class="btn-primary" title="Return to a palette generated from the original image colors.">Return to Original Palette</button>
+
             <div class="input-group">
-                <label for="ditheringAlgorithm">Dithering Algorithm</label>
-                <select id="ditheringAlgorithm" class="block w-full">
+                <label for="ditheringAlgorithm" title="Select a dithering algorithm to reduce color banding and create smoother transitions.">Dithering Algorithm</label>
+                <select id="ditheringAlgorithm" class="block w-full" title="Choose a dithering method. 'None' applies no dithering.">
                     <option value="none">None</option>
                     <option value="floyd-steinberg">Floyd-Steinberg</option>
                     <option value="atkinson">Atkinson</option>
@@ -333,8 +343,8 @@
             </div>
 
             <div class="input-group">
-                <label for="ditheringIntensity">Dithering Intensity (<span id="ditheringIntensityValue">100</span>%)</label>
-                <input type="range" id="ditheringIntensity" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                <label for="ditheringIntensity" title="Control the strength of the selected dithering effect.">Dithering Intensity (<span id="ditheringIntensityValue">100</span>%)</label>
+                <input type="range" id="ditheringIntensity" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" title="Slide to adjust dithering intensity. Double-click to reset.">
             </div>
 
             <hr class="border-gray-200 my-2">
@@ -343,32 +353,32 @@
 
             <div class="adjustments-grid">
                 <div class="input-group">
-                    <label for="hue">Hue Rotation (<span id="hueValue">0</span>°)</label>
-                    <input type="range" id="hue" min="0" max="360" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    <label for="hue" title="Rotate the colors around the color wheel.">Hue Rotation (<span id="hueValue">0</span>°)</label>
+                    <input type="range" id="hue" min="0" max="360" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" title="Adjust the hue (color tint). Double-click to reset.">
                 </div>
                 <div class="input-group">
-                    <label for="brightness">Brightness (<span id="brightnessValue">100</span>%)</label>
-                    <input type="range" id="brightness" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    <label for="brightness" title="Make the image lighter or darker.">Brightness (<span id="brightnessValue">100</span>%)</label>
+                    <input type="range" id="brightness" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" title="Adjust the image brightness. Double-click to reset.">
                 </div>
                 <div class="input-group">
-                    <label for="contrast">Contrast (<span id="contrastValue">100</span>%)</label>
-                    <input type="range" id="contrast" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    <label for="contrast" title="Increase or decrease the difference between light and dark areas.">Contrast (<span id="contrastValue">100</span>%)</label>
+                    <input type="range" id="contrast" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" title="Adjust the image contrast. Double-click to reset.">
                 </div>
                 <div class="input-group">
-                    <label for="saturation">Saturation (<span id="saturationValue">100</span>%)</label>
-                    <input type="range" id="saturation" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    <label for="saturation" title="Increase or decrease the intensity of colors.">Saturation (<span id="saturationValue">100</span>%)</label>
+                    <input type="range" id="saturation" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" title="Adjust the color saturation. Double-click to reset.">
                 </div>
                 <div class="input-group">
-                    <label for="gamma">Gamma (<span id="gammaValue">1.0</span>)</label>
-                    <input type="range" id="gamma" min="10" max="300" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    <label for="gamma" title="Adjust the overall lightness of the image, affecting mid-tones more.">Gamma (<span id="gammaValue">1.0</span>)</label>
+                    <input type="range" id="gamma" min="10" max="300" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" title="Adjust the gamma correction. Double-click to reset.">
                 </div>
             </div>
 
-            <button id="resetAdjustmentsBtn" class="btn-primary">Reset All Adjustments</button>
-            <button id="downloadSettingsBtn" class="btn-primary">Download Current Settings</button>
+            <button id="resetAdjustmentsBtn" class="btn-primary" title="Reset all image adjustment sliders to their default values.">Reset All Adjustments</button>
+            <button id="downloadSettingsBtn" class="btn-primary" title="Download current settings as a JSON file.">Download Current Settings</button>
             <div class="input-group">
                 <label for="uploadSettingsInput" class="sr-only">Upload Settings File</label>
-                <input type="file" id="uploadSettingsInput" accept=".json" class="btn-primary !bg-gray-200 !text-gray-800 hover:!bg-gray-300">
+                <input type="file" id="uploadSettingsInput" accept=".json" class="btn-primary !bg-gray-200 !text-gray-800 hover:!bg-gray-300" title="Upload a JSON file to load saved settings.">
             </div>
             
             <div id="loadingSpinner" class="loading-spinner"></div>
@@ -379,7 +389,7 @@
             <h2 class="text-2xl font-semibold">Result</h2>
             <canvas id="outputCanvas" class="w-full h-auto"></canvas>
             <div id="downloadLink" class="download-link">
-                <a href="#" id="downloadBtn" download="pixel-art.png">
+                <a href="#" id="downloadBtn" download="pixel-art.png" title="Click to download the generated pixel art image.">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
                     </svg>
@@ -394,18 +404,21 @@
         const imageUpload = document.getElementById('imageUpload');
         const outputWidthInput = document.getElementById('outputWidth');
         const outputHeightInput = document.getElementById('outputHeight');
+        const outputWidthValueSpan = document.getElementById('outputWidthValue'); // Added
+        const outputHeightValueSpan = document.getElementById('outputHeightValue'); // Added
         const pixelSizeInput = document.getElementById('pixelSize');
         const pixelSizeValueSpan = document.getElementById('pixelSizeValue');
         const paletteSizeInput = document.getElementById('paletteSize');
         const paletteSizeValueSpan = document.getElementById('paletteSizeValue');
         const palettePresetSelect = document.getElementById('palettePreset');
+        const randomizePaletteBtn = document.getElementById('randomizePaletteBtn'); // New
+        const returnToOriginalPaletteBtn = document.getElementById('returnToOriginalPaletteBtn'); // New
         const ditheringAlgorithmSelect = document.getElementById('ditheringAlgorithm');
         const ditheringIntensityInput = document.getElementById('ditheringIntensity'); // New
         const ditheringIntensityValueSpan = document.getElementById('ditheringIntensityValue'); // New
         const resetAdjustmentsBtn = document.getElementById('resetAdjustmentsBtn');
         const downloadSettingsBtn = document.getElementById('downloadSettingsBtn'); // New
         const uploadSettingsInput = document.getElementById('uploadSettingsInput'); // New
-        // const convertBtn = document.getElementById('convertBtn'); // Removed
         const outputCanvas = document.getElementById('outputCanvas');
         const downloadLink = document.getElementById('downloadLink');
         const downloadBtn = document.getElementById('downloadBtn');
@@ -606,6 +619,9 @@
 
                     outputWidthInput.value = defaultWidth;
                     outputHeightInput.value = defaultHeight;
+                    outputWidthValueSpan.textContent = defaultWidth; // Update span
+                    outputHeightValueSpan.textContent = defaultHeight; // Update span
+
 
                     hideLoading();
                     // Automatically process image after loading and setting defaults
@@ -667,6 +683,46 @@
             }
             triggerProcessImage();
         });
+
+        // Function to generate a random color palette
+        function generateRandomPalette(size) {
+            const newPalette = [];
+            for (let i = 0; i < size; i++) {
+                newPalette.push({
+                    r: Math.floor(Math.random() * 256),
+                    g: Math.floor(Math.random() * 256),
+                    b: Math.floor(Math.random() * 256)
+                });
+            }
+            return newPalette;
+        }
+
+        // Event listener for Randomize Palette button
+        randomizePaletteBtn.addEventListener('click', () => {
+            if (!originalImage) {
+                showMessage('Please upload an image first to randomize the palette.');
+                return;
+            }
+            palettePresetSelect.value = 'custom'; // Ensure custom is selected
+            paletteSizeInput.disabled = false; // Ensure palette size slider is enabled
+            // We don't need to generate the palette here, processImage will do it.
+            // Just trigger a re-process with a random palette flag
+            triggerProcessImage(true); // Pass true to indicate random palette generation
+            showMessage('Palette randomized!', 'success');
+        });
+
+        // Event listener for Return to Original Palette button
+        returnToOriginalPaletteBtn.addEventListener('click', () => {
+            if (!originalImage) {
+                showMessage('Please upload an image first to return to the original palette.');
+                return;
+            }
+            palettePresetSelect.value = 'custom'; // Ensure custom is selected
+            paletteSizeInput.disabled = false; // Ensure palette size slider is enabled
+            triggerProcessImage(); // Simply re-process, which will re-generate K-means palette
+            showMessage('Returned to original palette.', 'success');
+        });
+
 
         // Event listener for dithering algorithm selection
         ditheringAlgorithmSelect.addEventListener('change', () => {
@@ -742,8 +798,14 @@
         });
 
         // Event listeners for output dimensions
-        outputWidthInput.addEventListener('input', triggerProcessImage);
-        outputHeightInput.addEventListener('input', triggerProcessImage);
+        outputWidthInput.addEventListener('input', () => {
+            outputWidthValueSpan.textContent = outputWidthInput.value;
+            triggerProcessImage();
+        });
+        outputHeightInput.addEventListener('input', () => {
+            outputHeightValueSpan.textContent = outputHeightInput.value;
+            triggerProcessImage();
+        });
 
 
         // Event listener for Reset All Adjustments button click
@@ -841,7 +903,8 @@
 
         // Function to trigger image processing, with a small delay to prevent rapid re-processing
         let processTimeout;
-        function triggerProcessImage() {
+        // Added a parameter to indicate if a random palette should be generated
+        function triggerProcessImage(generateRandomPaletteFlag = false) {
             clearTimeout(processTimeout);
             processTimeout = setTimeout(() => {
                 if (originalImage) {
@@ -860,7 +923,8 @@
 
                     showLoading();
                     try {
-                        processImage(outputWidth, outputHeight, pixelSize, paletteSize);
+                        // Pass the flag to processImage
+                        processImage(outputWidth, outputHeight, pixelSize, paletteSize, generateRandomPaletteFlag);
                         hideLoading();
                         downloadLink.style.display = 'block';
                     } catch (error) {
@@ -975,7 +1039,8 @@
 
 
         // Main image processing function
-        function processImage(outputWidth, outputHeight, pixelSize, paletteSize) {
+        // Added generateRandomPaletteFlag parameter
+        function processImage(outputWidth, outputHeight, pixelSize, paletteSize, generateRandomPaletteFlag = false) {
             // Clear and draw original image to originalCanvas
             originalCanvas.width = originalImage.naturalWidth;
             originalCanvas.height = originalImage.naturalHeight;
@@ -1025,7 +1090,10 @@
             let targetPalette;
             const selectedPreset = palettePresetSelect.value;
 
-            if (selectedPreset === 'custom') {
+            if (generateRandomPaletteFlag) {
+                // Generate a completely random palette
+                targetPalette = generateRandomPalette(paletteSize);
+            } else if (selectedPreset === 'custom') {
                 // If custom, generate a palette using K-means based on paletteSize slider
                 const uniqueColors = new Set();
                 const sampleStep = Math.max(1, Math.floor(pixels.length / (pixelatedWidth * pixelatedHeight * 4 / 100)));
@@ -1050,6 +1118,7 @@
                         targetPalette.push(colorsArray[Math.floor(Math.random() * colorsArray.length)]);
                     }
                 } else {
+                    // Fallback for empty image or no unique colors
                     for (let i = 0; i < paletteSize; i++) {
                         const val = Math.round((i / (paletteSize - 1)) * 255);
                         targetPalette.push({ r: val, g: val, b: val });
